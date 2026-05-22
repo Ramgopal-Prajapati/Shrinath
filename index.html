@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shrinath Restorant C3 – Attendance System</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    /* ===================== CSS VARIABLES ===================== */
+    :root {
+      --bg: #f8f3ec;
+      --surface: #ffffff;
+      --card: #fffdf9;
+      --text: #1a1008;
+      --text-muted: #6b5c45;
+      --accent: #c8420a;
+      --accent2: #f0a500;
+      --accent3: #2a7d4f;
+      --border: rgba(200,66,10,0.18);
+      --shadow: 0 8px 40px rgba(200,66,10,0.10);
+      --glass: rgba(255,253,249,0.72);
+      --header-from: #1a0a00;
+      --header-to: #3d1200;
+      --input-bg: #fff8f0;
+      --success: #2a7d4f;
+      --error: #c8420a;
+      --radius: 18px;
+      --transition: 0.35s cubic-bezier(.4,0,.2,1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #100a04;
+      --surface: #1e1208;
+      --card: #251810;
+      --text: #f5e8d0;
+      --text-muted: #c49a6c;
+      --border: rgba(200,66,10,0.30);
+      --shadow: 0 8px 40px rgba(0,0,0,0.45);
+      --glass: rgba(30,18,8,0.80);
+      --input-bg: #1a1008;
+    }
+
+    /* ===================== RESET & BASE ===================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+      overflow-x: hidden;
+    }
+
+    /* ===================== HEADER ===================== */
+    .site-header {
+      background: linear-gradient(135deg, var(--header-from) 0%, var(--header-to) 60%, #7a2000 100%);
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-pattern {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle at 20% 50%, rgba(240,165,0,0.12) 0%, transparent 55%),
+                        radial-gradient(circle at 80% 20%, rgba(200,66,10,0.18) 0%, transparent 40%),
+                        radial-gradient(circle at 60% 80%, rgba(42,125,79,0.10) 0%, transparent 40%);
+    }
+
+    .header-inner {
+      position: relative; z-index: 2;
+      max-width: 960px; margin: 0 auto;
+      padding: 28px 24px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; }
+
+    .brand-icon {
+      width: 58px; height: 58px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; color: #fff;
+      box-shadow: 0 4px 20px rgba(240,165,0,0.45);
+      animation: spin-slow 10s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin-slow {
+      0%   { box-shadow: 0 4px 20px rgba(240,165,0,0.45); }
+      50%  { box-shadow: 0 4px 32px rgba(200,66,10,0.60); }
+      100% { box-shadow: 0 4px 20px rgba(240,165,0,0.45); }
+    }
+
+    .brand-text h1 {
+      font-family: 'Playfair Display', serif;
+      color: #fff;
+      font-size: clamp(15px, 3.5vw, 22px);
+      line-height: 1.25;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-text p {
+      color: var(--accent2);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 10px; }
+
+    #clock-display {
+      font-family: 'Playfair Display', serif;
+      color: #fff;
+      font-size: clamp(14px, 3vw, 20px);
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 6px 14px;
+      letter-spacing: 0.05em;
+    }
+
+    #theme-toggle {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background var(--transition);
+    }
+    #theme-toggle:hover { background: rgba(255,255,255,0.22); }
+
+    /* Logged-in user badge */
+    #user-badge {
+      display: none;
+      align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.20);
+      border-radius: 10px;
+      padding: 6px 12px;
+      color: #fff;
+      font-size: 13px;
+    }
+    #user-badge.show { display: flex; }
+    #logout-btn {
+      background: rgba(200,66,10,0.65);
+      border: none; color: #fff;
+      border-radius: 6px;
+      padding: 3px 8px; font-size: 12px;
+      cursor: pointer; margin-left: 4px;
+      transition: background var(--transition);
+    }
+    #logout-btn:hover { background: var(--accent); }
+
+    /* ===================== MAIN CONTAINER ===================== */
+    .app-container {
+      max-width: 620px; margin: 0 auto;
+      padding: 32px 16px 60px;
+    }
+
+    /* ===================== PAGES ===================== */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeUp 0.45s var(--transition) forwards; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===================== CARDS ===================== */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 30px 28px;
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-title i { color: var(--accent); font-size: 18px; }
+
+    /* ===================== FORM ELEMENTS ===================== */
+    .form-group { margin-bottom: 18px; }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap i {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--accent); font-size: 15px; pointer-events: none;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px 12px 40px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      color: var(--text);
+      transition: border var(--transition), box-shadow var(--transition);
+      outline: none;
+    }
+    .form-group input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,66,10,0.12);
+    }
+
+    /* ===================== BUTTONS ===================== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 26px;
+      border: none; border-radius: 12px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+      position: relative; overflow: hidden;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #e05010);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(200,66,10,0.35);
+      width: 100%;
+    }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 28px rgba(200,66,10,0.50); transform: translateY(-1px); }
+
+    .btn-success {
+      background: linear-gradient(135deg, #2a7d4f, #1e6040);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(42,125,79,0.35);
+      flex: 1;
+    }
+    .btn-success:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(42,125,79,0.50); }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #c8420a, #a33008);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(200,66,10,0.35);
+      flex: 1;
+    }
+    .btn-danger:hover:not(:disabled) { transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      width: 100%;
+    }
+    .btn-secondary:hover { background: var(--border); }
+
+    .btn-row { display: flex; gap: 12px; }
+
+    /* ===================== WELCOME ANIMATION ===================== */
+    .welcome-banner {
+      text-align: center;
+      padding: 10px 0 4px;
+    }
+    .welcome-banner .welcome-emoji {
+      font-size: 48px;
+      display: block;
+      animation: bounce 1.6s infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-12px); }
+    }
+    .welcome-banner h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(20px, 5vw, 28px);
+      margin: 8px 0 4px;
+    }
+    .welcome-banner p { font-size: 13px; color: var(--text-muted); }
+
+    /* ===================== STATUS BADGE ===================== */
+    .status-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+    .chip-ok  { background: rgba(42,125,79,0.14); color: #2a7d4f; border: 1px solid rgba(42,125,79,0.28); }
+    .chip-err { background: rgba(200,66,10,0.12); color: var(--accent); border: 1px solid rgba(200,66,10,0.25); }
+    .chip-warn { background: rgba(240,165,0,0.12); color: #b87800; border: 1px solid rgba(240,165,0,0.30); }
+
+    #location-status { margin-bottom: 16px; }
+
+    /* ===================== CAMERA ===================== */
+    .camera-wrap {
+      position: relative;
+      border-radius: 14px; overflow: hidden;
+      background: #000;
+      aspect-ratio: 4/3;
+      margin-bottom: 14px;
+    }
+    #video-feed {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .camera-overlay {
+      position: absolute; inset: 0;
+      border: 3px solid rgba(200,66,10,0.55);
+      border-radius: 14px;
+      pointer-events: none;
+    }
+    .camera-overlay::before, .camera-overlay::after {
+      content: '';
+      position: absolute;
+      width: 22px; height: 22px;
+      border-color: var(--accent2);
+      border-style: solid;
+    }
+    .camera-overlay::before { top: 10px; left: 10px; border-width: 3px 0 0 3px; }
+    .camera-overlay::after  { bottom: 10px; right: 10px; border-width: 0 3px 3px 0; }
+
+    #canvas-preview { display: none; }
+    #snapshot-preview {
+      width: 100%; border-radius: 14px;
+      display: none;
+      border: 2px solid var(--accent2);
+      margin-bottom: 14px;
+    }
+
+    /* ===================== ATTENDANCE PUNCH AREA ===================== */
+    .punch-section { display: flex; gap: 14px; margin-top: 8px; }
+
+    /* ===================== HISTORY ===================== */
+    .history-list { list-style: none; }
+    .history-item {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex; align-items: flex-start; gap: 12px;
+      animation: fadeUp 0.35s ease;
+    }
+    .history-item .hi-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .hi-in  { background: rgba(42,125,79,0.15); color: #2a7d4f; }
+    .hi-out { background: rgba(200,66,10,0.15); color: var(--accent); }
+    .history-item .hi-body { flex: 1; }
+    .history-item .hi-name { font-weight: 600; font-size: 14px; }
+    .history-item .hi-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.7; }
+    .history-item .hi-type {
+      font-size: 11px; font-weight: 700;
+      padding: 2px 10px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      flex-shrink: 0;
+    }
+    .type-in  { background: rgba(42,125,79,0.15); color: #2a7d4f; }
+    .type-out { background: rgba(200,66,10,0.15); color: var(--accent); }
+
+    /* ===================== POPUPS ===================== */
+    .popup-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      z-index: 900;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .popup-backdrop.show { opacity: 1; pointer-events: all; }
+
+    .popup-box {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      max-width: 360px; width: 100%;
+      text-align: center;
+      transform: scale(0.88);
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.30);
+    }
+    .popup-backdrop.show .popup-box { transform: scale(1); }
+
+    .popup-icon {
+      width: 70px; height: 70px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; margin: 0 auto 16px;
+    }
+    .popup-icon.success { background: rgba(42,125,79,0.15); color: #2a7d4f; }
+    .popup-icon.error   { background: rgba(200,66,10,0.15); color: var(--accent); }
+
+    .popup-box h3 { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 8px; }
+    .popup-box p  { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+    .popup-box .btn { margin-top: 20px; }
+
+    /* ===================== LOADER ===================== */
+    .loader-ring {
+      width: 42px; height: 42px;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 18px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===================== FOOTER ===================== */
+    .site-footer {
+      background: linear-gradient(135deg, var(--header-from), var(--header-to));
+      color: rgba(255,255,255,0.65);
+      text-align: center;
+      padding: 24px 16px;
+      font-size: 12px;
+      line-height: 1.9;
+    }
+    .site-footer strong { color: var(--accent2); font-family: 'Playfair Display', serif; font-size: 14px; }
+    .footer-icons { font-size: 18px; margin-bottom: 6px; }
+    .footer-icons i { margin: 0 5px; opacity: 0.8; }
+
+    /* ===================== INFO ROW ===================== */
+    .info-row {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12.5px; color: var(--text-muted);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row i { color: var(--accent); width: 18px; text-align: center; }
+    .info-row span { flex: 1; word-break: break-all; }
+
+    /* ===================== DIVIDER ===================== */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--text-muted); font-size: 12px;
+      margin: 6px 0 18px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--border);
+    }
+
+    /* ===================== SECTION HEADING ===================== */
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-heading i { color: var(--accent); }
+
+    /* ===================== RESPONSIVE ===================== */
+    @media (max-width: 480px) {
+      .card { padding: 22px 16px; }
+      .header-inner { padding: 18px 14px; }
+      .btn-row { flex-direction: column; }
+      .punch-section { flex-direction: column; }
+    }
+
+    /* ===================== MISC ===================== */
+    #clear-history-btn {
+      background: none; border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 8px;
+      padding: 6px 14px; font-size: 12px; cursor: pointer;
+      transition: background var(--transition);
+    }
+    #clear-history-btn:hover { background: rgba(200,66,10,0.08); }
+
+    #selfie-thumb {
+      width: 48px; height: 48px; border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent2);
+      display: none;
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #2a7d4f;
+      animation: pulse-dot 1.4s ease infinite;
+      margin-right: 4px;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.7); }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header class="site-header">
+  <div class="header-pattern"></div>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-utensils"></i></div>
+      <div class="brand-text">
+        <h1>Shrinath Restorant C3</h1>
+        <p><i class="fa-solid fa-star" style="font-size:9px;margin-right:3px;"></i> Family Restorant &nbsp;|&nbsp; Attendance Portal</p>
+        <h2>Created By <a href="https://ramgopal-prajapati.github.io/iamramsir/">Ramgopal </a> </h2>
+      </div>
+    </div>
+    <div class="header-right">
+      <div id="user-badge">
+        <i class="fa-solid fa-circle-user"></i>
+        <span id="user-badge-name"></span>
+        <button id="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+      </div>
+      <div id="clock-display">--:--:--</div>
+      <button id="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== MAIN ==================== -->
+<main class="app-container">
+
+  <!-- =========== PAGE 1: LOGIN =========== -->
+  <div id="page-login" class="page active">
+
+    <div class="welcome-banner">
+      <span class="welcome-emoji">🍽️</span>
+      <h2>Welcome, Team Member</h2>
+      <p>Please login to mark your attendance</p>
+    </div>
+
+    <br />
+
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-id-badge"></i> Staff Login</div>
+
+      <div class="form-group">
+        <label>Staff Name</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="login-name" placeholder="Enter your name" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Staff ID</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-hashtag"></i>
+          <input type="password" id="login-id" placeholder="Enter your staff ID" autocomplete="off" />
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="doLogin()">
+        <i class="fa-solid fa-right-to-bracket"></i> Login
+      </button>
+    </div>
+
+    <!-- Demo hint -->
+    <div class="card" style="text-align:center; padding: 14px 20px;">
+      <p style="font-size:12px; color:var(--text-muted);">
+        <i class="fa-solid fa-circle-info" style="color:var(--accent2);margin-right:5px;"></i>
+        <!-- <strong>Staff Credentials:</strong> Ram/ram101 · Mamta/mamta101 · Priya/priya101 · Rohit/rohit101 -->
+      </p>
+    </div>
+
+  </div><!-- end page-login -->
+
+  <!-- =========== PAGE 2: ATTENDANCE =========== -->
+  <div id="page-attendance" class="page">
+
+    <!-- Location status -->
+    <div class="card" style="padding:18px 22px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px;">
+            <span class="live-dot"></span> Live Location
+          </div>
+          <div id="location-status">
+            <span class="status-chip chip-warn"><i class="fa-solid fa-spinner fa-spin"></i> Fetching GPS…</span>
+          </div>
+          <div id="address-display" style="font-size:12px;color:var(--text-muted);margin-top:4px;"></div>
+        </div>
+        <button class="btn btn-secondary" onclick="getLocation()" style="width:auto;padding:9px 16px;font-size:12px;">
+          <i class="fa-solid fa-location-crosshairs"></i> Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Camera -->
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-camera"></i> Selfie Capture</div>
+
+      <div class="camera-wrap" id="camera-wrap">
+        <video id="video-feed" autoplay playsinline></video>
+        <div class="camera-overlay"></div>
+      </div>
+      <canvas id="canvas-preview"></canvas>
+      <img id="snapshot-preview" alt="Selfie Preview" />
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="startCamera()" id="btn-cam-start" style="width:auto;flex:1;">
+          <i class="fa-solid fa-video"></i> Start Camera
+        </button>
+        <button class="btn btn-primary" onclick="capturePhoto()" id="btn-snap" style="width:auto;flex:1;" disabled>
+          <i class="fa-solid fa-camera"></i> Take Selfie
+        </button>
+        <button class="btn btn-secondary" onclick="retakePhoto()" id="btn-retake" style="display:none;width:auto;flex:1;">
+          <i class="fa-solid fa-rotate-right"></i> Retake
+        </button>
+      </div>
+    </div>
+
+    <!-- Punch -->
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-clock"></i> Mark Attendance</div>
+
+      <div class="info-row">
+        <i class="fa-solid fa-user"></i>
+        <span id="disp-name">–</span>
+      </div>
+      <div class="info-row">
+        <i class="fa-solid fa-id-card"></i>
+        <span id="disp-id">–</span>
+      </div>
+      <div class="info-row">
+        <i class="fa-solid fa-calendar-day"></i>
+        <span id="disp-date">–</span>
+      </div>
+
+      <br />
+      <div class="punch-section">
+        <button class="btn btn-success" id="btn-punch-in" onclick="punch('IN')" disabled>
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Punch In
+        </button>
+        <button class="btn btn-danger" id="btn-punch-out" onclick="punch('OUT')" disabled>
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Punch Out
+        </button>
+      </div>
+      <p id="punch-help" style="font-size:11.5px;color:var(--text-muted);margin-top:10px;text-align:center;">
+        <i class="fa-solid fa-circle-info"></i> Get GPS location & take selfie to enable punch buttons
+      </p>
+    </div>
+
+    <!-- Attendance History -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="section-heading" style="margin:0;"><i class="fa-solid fa-clock-rotate-left"></i> Today's History</div>
+      <button id="clear-history-btn" onclick="clearHistory()"><i class="fa-solid fa-trash"></i> Clear</button>
+    </div>
+    <ul class="history-list" id="history-list">
+      <li style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px 0;">
+        <i class="fa-regular fa-clock" style="font-size:22px;display:block;margin-bottom:8px;"></i>
+        No records yet
+      </li>
+    </ul>
+
+  </div><!-- end page-attendance -->
+
+</main>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="site-footer">
+  <div class="footer-icons">
+    <i class="fa-solid fa-utensils" style="color:var(--accent2)"></i>
+    <i class="fa-solid fa-heart" style="color:#e05050"></i>
+    <i class="fa-solid fa-star" style="color:var(--accent2)"></i>
+  </div>
+  <strong>Shrinath Restorant C3</strong><br />
+  Family Restorant &nbsp;·&nbsp; Attendance Management System<br />
+  <span style="font-size:11px;">© 2025 Created By 
+<a href="https://ramgopal-prajapati.github.io/iamramsir/">Ramgopal</a>
+  </span>
+</footer>
+
+<!-- ==================== POPUPS ==================== -->
+
+<!-- Success Popup -->
+<div class="popup-backdrop" id="popup-success">
+  <div class="popup-box">
+    <div class="popup-icon success"><i class="fa-solid fa-circle-check"></i></div>
+    <h3 id="popup-success-title">Attendance Marked!</h3>
+    <p id="popup-success-msg">Your attendance has been recorded successfully.</p>
+    <div id="whatsapp-btn-wrap" style="margin-top:16px;"></div>
+    <button class="btn btn-secondary" onclick="closePopup('popup-success')" style="margin-top:10px;">
+      <i class="fa-solid fa-xmark"></i> Close
+    </button>
+  </div>
+</div>
+
+<!-- Error Popup -->
+<div class="popup-backdrop" id="popup-error">
+  <div class="popup-box">
+    <div class="popup-icon error"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <h3>Access Denied</h3>
+    <p id="popup-error-msg">You are outside the allowed area.</p>
+    <button class="btn btn-primary" onclick="closePopup('popup-error')" style="margin-top:18px;">
+      <i class="fa-solid fa-xmark"></i> OK
+    </button>
+  </div>
+</div>
+
+<!-- Login Error Popup -->
+<div class="popup-backdrop" id="popup-login-err">
+  <div class="popup-box">
+    <div class="popup-icon error"><i class="fa-solid fa-user-slash"></i></div>
+    <h3>Login Failed</h3>
+    <p>Invalid Staff Name or Staff ID. Please try again.</p>
+    <button class="btn btn-primary" onclick="closePopup('popup-login-err')" style="margin-top:18px;">
+      <i class="fa-solid fa-rotate-right"></i> Try Again
+    </button>
+  </div>
+</div>
+
+<!-- Loader Popup -->
+<div class="popup-backdrop" id="popup-loader">
+  <div class="popup-box">
+    <div class="loader-ring"></div>
+    <p id="loader-msg">Getting your location…</p>
+  </div>
+</div>
+
+
+<!-- ==================== SCRIPT ==================== -->
+<script>
+// =====================================================================
+//  CONFIGURATION
+// =====================================================================
+
+// Hardcoded staff credentials { name (lowercase) : id }
+const STAFF = {
+  'ram'   : 'ram101',
+  'mamta' : 'mamta101',
+  'priya' : 'priya101',
+  'rohit' : 'rohit101'
+};
+
+// Restaurant GPS coordinates (Shrinath Restorant C3, India)
+// Approximate coordinates derived from the Google Maps short link
+// https://maps.app.goo.gl/djJiuj5SzKVt6GD69
+const REST_LAT  = 22.74345;   // ← Update with exact lat from Google Maps if needed
+const REST_LNG  = 75.89352;   // ← Update with exact lng from Google Maps if needed
+const MAX_DIST  = 100;        // metres – allowed radius
+
+// WhatsApp number (country code + number, no +)
+const WA_NUMBER = '919753528324';
+
+// =====================================================================
+//  STATE
+// =====================================================================
+let currentUser  = null;  // { name, id }
+let photoDataUrl = null;  // base64 selfie
+let gpsData      = null;  // { lat, lng, address, mapsUrl, dist }
+let videoStream  = null;
+
+// =====================================================================
+//  CLOCK
+// =====================================================================
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock-display').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// =====================================================================
+//  THEME
+// =====================================================================
+(function initTheme() {
+  const saved = localStorage.getItem('sr_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeIcon(saved);
+})();
+
+function toggleTheme() {
+  const cur  = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('sr_theme', next);
+  updateThemeIcon(next);
+}
+function updateThemeIcon(t) {
+  document.querySelector('#theme-toggle i').className =
+    t === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+}
+
+// =====================================================================
+//  POPUP HELPERS
+// =====================================================================
+function openPopup(id)  { document.getElementById(id).classList.add('show'); }
+function closePopup(id) { document.getElementById(id).classList.remove('show'); }
+
+function showLoader(msg = 'Please wait…') {
+  document.getElementById('loader-msg').textContent = msg;
+  openPopup('popup-loader');
+}
+function hideLoader() { closePopup('popup-loader'); }
+
+// =====================================================================
+//  PAGE NAVIGATION
+// =====================================================================
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+}
+
+// =====================================================================
+//  LOGIN
+// =====================================================================
+function doLogin() {
+  const nameRaw = document.getElementById('login-name').value.trim();
+  const idRaw   = document.getElementById('login-id').value.trim();
+
+  if (!nameRaw || !idRaw) {
+    openPopup('popup-login-err');
+    return;
+  }
+
+  const nameLow = nameRaw.toLowerCase();
+  if (STAFF[nameLow] && STAFF[nameLow] === idRaw) {
+    // Capitalise first letter for display
+    const displayName = nameRaw.charAt(0).toUpperCase() + nameRaw.slice(1).toLowerCase();
+    currentUser = { name: displayName, id: idRaw };
+
+    // Update UI
+    document.getElementById('user-badge-name').textContent = displayName;
+    document.getElementById('user-badge').classList.add('show');
+    document.getElementById('disp-name').textContent = displayName;
+    document.getElementById('disp-id').textContent   = idRaw;
+    document.getElementById('disp-date').textContent = formatDate(new Date());
+
+    showPage('page-attendance');
+    renderHistory();
+    getLocation();   // auto-fetch GPS
+    startCamera();   // auto-open camera
+  } else {
+    openPopup('popup-login-err');
+  }
+}
+
+// Allow pressing Enter in login fields
+document.addEventListener('DOMContentLoaded', () => {
+  ['login-name','login-id'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+});
+
+// =====================================================================
+//  LOGOUT
+// =====================================================================
+function logout() {
+  stopCamera();
+  currentUser  = null;
+  photoDataUrl = null;
+  gpsData      = null;
+  document.getElementById('user-badge').classList.remove('show');
+  document.getElementById('login-name').value = '';
+  document.getElementById('login-id').value   = '';
+  document.getElementById('snapshot-preview').style.display = 'none';
+  document.getElementById('camera-wrap').style.display      = 'block';
+  document.getElementById('btn-snap').disabled    = true;
+  document.getElementById('btn-punch-in').disabled  = true;
+  document.getElementById('btn-punch-out').disabled = true;
+  showPage('page-login');
+}
+
+// =====================================================================
+//  GPS / LOCATION
+// =====================================================================
+function getLocation() {
+  if (!navigator.geolocation) {
+    setLocationStatus('error', '<i class="fa-solid fa-circle-xmark"></i> Geolocation not supported');
+    return;
+  }
+  setLocationStatus('warn', '<i class="fa-solid fa-spinner fa-spin"></i> Fetching GPS…');
+  document.getElementById('address-display').textContent = '';
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat  = pos.coords.latitude;
+      const lng  = pos.coords.longitude;
+      const dist = haversine(lat, lng, REST_LAT, REST_LNG);
+
+      // Reverse geocode using open-source Nominatim (no API key required)
+      let address = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      try {
+        const r = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const j = await r.json();
+        if (j && j.display_name) address = j.display_name;
+      } catch(_) { /* silently use coords */ }
+
+      const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+      gpsData = { lat, lng, address, mapsUrl, dist };
+
+      document.getElementById('address-display').textContent = '📍 ' + address.substring(0,80) + '…';
+
+      if (dist <= MAX_DIST) {
+        setLocationStatus('ok',
+          `<i class="fa-solid fa-circle-check"></i> Within range &nbsp;·&nbsp; ${Math.round(dist)} m away`);
+        tryEnablePunch();
+      } else {
+        setLocationStatus('error',
+          `<i class="fa-solid fa-circle-xmark"></i> Out of range &nbsp;·&nbsp; ${Math.round(dist)} m away`);
+        disablePunch();
+        openPopup('popup-error');
+        document.getElementById('popup-error-msg').textContent =
+          `You are ${Math.round(dist)} metres from the restaurant. Punch allowed only within ${MAX_DIST}m.`;
+      }
+    },
+    (err) => {
+      setLocationStatus('error', '<i class="fa-solid fa-triangle-exclamation"></i> Location denied. Please allow GPS.');
+      disablePunch();
+    },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+}
+
+function setLocationStatus(type, html) {
+  const el = document.getElementById('location-status');
+  const cls = type === 'ok' ? 'chip-ok' : type === 'error' ? 'chip-err' : 'chip-warn';
+  el.innerHTML = `<span class="status-chip ${cls}">${html}</span>`;
+}
+
+// Haversine formula – returns distance in metres
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2
+          + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// =====================================================================
+//  CAMERA
+// =====================================================================
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false
+    });
+    videoStream = stream;
+    const video = document.getElementById('video-feed');
+    video.srcObject = stream;
+    document.getElementById('camera-wrap').style.display = 'block';
+    document.getElementById('snapshot-preview').style.display = 'none';
+    document.getElementById('btn-snap').disabled   = false;
+    document.getElementById('btn-retake').style.display = 'none';
+    document.getElementById('btn-cam-start').innerHTML = '<i class="fa-solid fa-video"></i> Camera On';
+  } catch(e) {
+    alert('Camera access denied. Please allow camera permission to take selfie.');
+  }
+}
+
+function stopCamera() {
+  if (videoStream) {
+    videoStream.getTracks().forEach(t => t.stop());
+    videoStream = null;
+  }
+}
+
+function capturePhoto() {
+  const video  = document.getElementById('video-feed');
+  const canvas = document.getElementById('canvas-preview');
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  photoDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+
+  const preview = document.getElementById('snapshot-preview');
+  preview.src   = photoDataUrl;
+  preview.style.display = 'block';
+  document.getElementById('camera-wrap').style.display = 'none';
+  document.getElementById('btn-snap').disabled = true;
+  document.getElementById('btn-retake').style.display = 'inline-flex';
+  stopCamera();
+  tryEnablePunch();
+}
+
+function retakePhoto() {
+  photoDataUrl = null;
+  document.getElementById('snapshot-preview').style.display = 'none';
+  document.getElementById('btn-retake').style.display = 'none';
+  disablePunch();
+  startCamera();
+}
+
+// =====================================================================
+//  ENABLE / DISABLE PUNCH
+// =====================================================================
+function tryEnablePunch() {
+  const ready = photoDataUrl && gpsData && gpsData.dist <= MAX_DIST;
+  document.getElementById('btn-punch-in').disabled  = !ready;
+  document.getElementById('btn-punch-out').disabled = !ready;
+  if (ready) {
+    document.getElementById('punch-help').innerHTML =
+      '<i class="fa-solid fa-circle-check" style="color:#2a7d4f"></i> Ready to punch!';
+  }
+}
+
+function disablePunch() {
+  document.getElementById('btn-punch-in').disabled  = true;
+  document.getElementById('btn-punch-out').disabled = true;
+}
+
+// =====================================================================
+//  PUNCH IN / OUT
+// =====================================================================
+function punch(type) {
+  if (!currentUser || !gpsData || !photoDataUrl) return;
+
+  const now  = new Date();
+  const time = formatTime(now);
+  const date = formatDate(now);
+
+  const record = {
+    id       : Date.now(),
+    name     : currentUser.name,
+    staffId  : currentUser.id,
+    type     : type,      // 'IN' or 'OUT'
+    time     : time,
+    date     : date,
+    address  : gpsData.address,
+    mapsUrl  : gpsData.mapsUrl,
+    lat      : gpsData.lat,
+    lng      : gpsData.lng,
+    photo    : photoDataUrl
+  };
+
+  // Save to localStorage
+  saveRecord(record);
+
+  // Render history
+  renderHistory();
+
+  // Build WhatsApp message
+  const wa = buildWhatsAppLink(record);
+
+  // Show success popup with WhatsApp link
+  document.getElementById('popup-success-title').textContent =
+    type === 'IN' ? '✅ Punched In!' : '✅ Punched Out!';
+  document.getElementById('popup-success-msg').textContent =
+    `${currentUser.name} | ${time} | ${date}`;
+  document.getElementById('whatsapp-btn-wrap').innerHTML = `
+    <a href="${wa}" target="_blank" class="btn btn-success" style="text-decoration:none;display:inline-flex;">
+      <i class="fa-brands fa-whatsapp" style="font-size:18px;"></i>&nbsp; Send via WhatsApp
+    </a>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">
+      Tap to open WhatsApp, then press Send.
+    </p>
+  `;
+  openPopup('popup-success');
+}
+
+// =====================================================================
+//  WHATSAPP CLICK-TO-CHAT
+// =====================================================================
+function buildWhatsAppLink(r) {
+  const emoji = r.type === 'IN' ? '🟢' : '🔴';
+  const msg =
+`${emoji} *Attendance Alert – Shrinath Restorant C3*
+
+👤 *Staff Name:* ${r.name}
+🪪 *Staff ID:* ${r.staffId}
+📌 *Punch Type:* ${r.type === 'IN' ? 'PUNCH IN ✅' : 'PUNCH OUT 🚪'}
+🕐 *Time:* ${r.time}
+📅 *Date:* ${r.date}
+📍 *Location:* ${r.address.substring(0,120)}
+🗺 *Map:* ${r.mapsUrl}
+
+_Sent from Shrinath Attendance App_`;
+
+  return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+// =====================================================================
+//  LOCAL STORAGE – HISTORY
+// =====================================================================
+function saveRecord(record) {
+  const all = getHistory();
+  // Don't save the full photo in LS to save space – store a small thumbnail
+  const lite = { ...record, photo: record.photo.substring(0, 200) + '…(photo)' };
+  all.unshift(lite);
+  localStorage.setItem('sr_attendance', JSON.stringify(all.slice(0, 50)));
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('sr_attendance') || '[]'); }
+  catch(_) { return []; }
+}
+
+function clearHistory() {
+  if (confirm('Clear all attendance history?')) {
+    localStorage.removeItem('sr_attendance');
+    renderHistory();
+  }
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const all  = getHistory();
+
+  if (!all.length) {
+    list.innerHTML = `<li style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px 0;">
+      <i class="fa-regular fa-clock" style="font-size:22px;display:block;margin-bottom:8px;"></i>
+      No records yet
+    </li>`;
+    return;
+  }
+
+  list.innerHTML = all.map(r => `
+    <li class="history-item">
+      <div class="hi-icon ${r.type === 'IN' ? 'hi-in' : 'hi-out'}">
+        <i class="fa-solid fa-arrow-${r.type === 'IN' ? 'right-to' : 'right-from'}-bracket"></i>
+      </div>
+      <div class="hi-body">
+        <div class="hi-name">${r.name} <span style="font-weight:400;color:var(--text-muted);font-size:12px;">(${r.staffId})</span></div>
+        <div class="hi-meta">
+          🕐 ${r.time} &nbsp;|&nbsp; 📅 ${r.date}<br/>
+          📍 ${r.address.substring(0,60)}…
+        </div>
+      </div>
+      <span class="hi-type ${r.type === 'IN' ? 'type-in' : 'type-out'}">${r.type}</span>
+    </li>
+  `).join('');
+}
+
+// =====================================================================
+//  DATE / TIME HELPERS
+// =====================================================================
+function formatTime(d) {
+  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+}
+function formatDate(d) {
+  return d.toLocaleDateString('en-IN', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+}
+
+// =====================================================================
+//  INIT
+// =====================================================================
+renderHistory();  // render any saved history on load
+</script>
+
+</body>
+</html>
